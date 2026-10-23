@@ -1,5 +1,6 @@
 import type { Router } from '../app.ts';
 import { nowIso } from '../lib/clock.ts';
+import { expireStaleOrders } from '../lib/expiry.ts';
 import { sendError } from '../lib/http.ts';
 import { getOrder, nextId, saveOrder } from '../store.ts';
 import type { Order, OrderItem } from '../types.ts';
@@ -26,5 +27,10 @@ export function registerOrderRoutes(router: Router): void {
     const order: Order = { id: nextId(), items, status: 'pending', createdAt: nowIso() };
     saveOrder(order);
     res.status(201).json(order);
+  });
+
+  router.post('/orders/expire', (_ctx, res) => {
+    const expired = expireStaleOrders();
+    res.json({ expired: expired.map((o) => o.id) });
   });
 }
