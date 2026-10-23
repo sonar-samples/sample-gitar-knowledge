@@ -27,4 +27,20 @@ export function registerOrderRoutes(router: Router): void {
     saveOrder(order);
     res.status(201).json(order);
   });
+
+  router.post('/orders/:id/cancel', ({ params }, res) => {
+    const order = getOrder(params.id);
+    if (!order) {
+      res.status(404).json({ message: 'Order not found' });
+      return;
+    }
+    if (order.status === 'shipped') {
+      res.status(409).json({ message: 'Order already shipped' });
+      return;
+    }
+    order.status = 'cancelled';
+    order.cancelledAt = nowIso();
+    saveOrder(order);
+    res.json(order);
+  });
 }
